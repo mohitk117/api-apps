@@ -1,0 +1,79 @@
+<html>
+<head>
+  <title>University List App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.1/css/bootstrap.min.css" integrity="sha512-6KY5s6UI5J7SVYuZB4S/CZMyPylqyyNZco376NM2Z8Sb8OxEdp02e1jkKk/wZxIEmjQ6DRCEBhni+gpr9c4tvA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.0/themes/smoothness/jquery-ui.css">
+    <style>
+         .col-3.college {border: 1px black dotted; padding:6px;display:inline-block;width:auto;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+<form>
+  <div class="form-group">
+    <label for="country">Country</label>
+    <input type="text" class="form-control" id="country" placeholder="country">
+    <label for="university">University</label>
+    <input type="text" class="form-control" id="university" placeholder="university">
+  </div>
+</form>
+
+
+</div>
+</div>
+
+<div class="row" id="UniversityCard">
+    <div class="col-12 p-2">
+    </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/js/bootstrap.min.js" integrity="sha512-a6ctI6w1kg3J4dSjknHj3aWLEbjitAXAjLDRUxo2wyYmDFRcz2RJuQr5M3Kt8O/TtUSp8n2rAyaXYy1sjoKmrQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-tagsinput/1.3.6/jquery.tagsinput.min.js" integrity="sha512-wTIaZJCW/mkalkyQnuSiBodnM5SRT8tXJ3LkIUA/3vBJ01vWe5Ene7Fynicupjt4xqxZKXA97VgNBHvIf5WTvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
+<script>
+$(document).ready(function(){
+  $.post("getUniversity.php", {type:'list', value: "countryAndCollege"}, function(response){
+      console.log(response);
+      $('#country').autocomplete("option", { source: response.countries });
+  }).fail(function(error){
+    console.log(error);
+  });
+
+  $( "#university" ).on("change", function(e){
+    console.log($(this).val(), $('#country').val());
+    $.post("getUniversity.php", {type:'collegeData', value: $(this).val(), query: $('#country').val()}, function(response){
+      console.log(response);
+      $.each(response, function(i,val){
+        var college = '<span class="col-3 college" data-toggle="tooltip" data-placement="top" title="' + val.alpha_two_code + ' : ' + val.country + ' [www:' + val.web_pages.length  + ']"><span class="college-button" data-onclick="' + val.web_pages[0] + '">' + val.name + "</span></span>";
+        $("#UniversityCard .col-12").append(college);
+      });
+    
+    }).fail(function(error){
+      console.log(error);
+    });
+  });
+  $(document).on("click", "span.college-button", function(e){
+    var www = $(this).data("onclick");
+    var handle = window.open(www, '_blank');
+    handle.blur;
+  })
+  $('#university').keypress(function (e) { var key = e.which; if(key == 13){$("#university").trigger("change");return false;  }});
+
+  $( "#country" ).autocomplete({
+      source: ["United States", "Italy", "Austria"],
+      select: function( event, ui ) {
+        
+        }
+    });
+
+   
+
+});
+</script>
+
+</body>
+</html>

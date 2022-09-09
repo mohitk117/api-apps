@@ -1,0 +1,93 @@
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.1/css/bootstrap.min.css" integrity="sha512-6KY5s6UI5J7SVYuZB4S/CZMyPylqyyNZco376NM2Z8Sb8OxEdp02e1jkKk/wZxIEmjQ6DRCEBhni+gpr9c4tvA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-tagsinput/1.3.6/jquery.tagsinput.min.css" integrity="sha512-uKwYJOyykD83YchxJbUxxbn8UcKAQBu+1hcLDRKZ9VtWfpMb1iYfJ74/UIjXQXWASwSzulZEC1SFGj+cslZh7Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.0/themes/smoothness/jquery-ui.css">
+    <style>
+        .col-3.meal {border: 1px black dotted;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+<form>
+  <div class="form-group">
+    <label for="ingredients">Ingredients</label>
+    <input type="text" class="form-control" id="ingredients" placeholder="ingredients">
+    <label for="ingredientstags">Ingredients</label>
+    <input type="text" class="form-control" id="ingredientstags" placeholder="ingredientstags">
+  </div>
+</form>
+
+
+</div>
+</div>
+<div class="row" id="Meals"></div>
+
+<div class="row" id="MealCard">
+    <div class="col-12 p-2">
+<div class="card">
+    <div class="card-header">
+    </div>
+    <div class="card-body">
+      <h5 class="card-title"></h5>
+      <p class="card-text">
+        <div class="col-4"><img src=""></div>
+        <div class="col-8"></div>
+      </p>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/js/bootstrap.min.js" integrity="sha512-a6ctI6w1kg3J4dSjknHj3aWLEbjitAXAjLDRUxo2wyYmDFRcz2RJuQr5M3Kt8O/TtUSp8n2rAyaXYy1sjoKmrQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-tagsinput/1.3.6/jquery.tagsinput.min.js" integrity="sha512-wTIaZJCW/mkalkyQnuSiBodnM5SRT8tXJ3LkIUA/3vBJ01vWe5Ene7Fynicupjt4xqxZKXA97VgNBHvIf5WTvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
+<script>
+$(document).ready(function(){
+    $('#ingredientstags').tagsInput({
+        'onAddTag':function(tag){
+            $.post("getJSON.php", {url:"http://www.themealdb.com/api/json/v1/1/filter.php?i=" + tag}, function(response){
+            console.log(response);
+            $.each(response.meals, function(i,val){
+                var mealHTML = '<div class="col-3 meal" data-id="' + val.idMeal + '" data-image="' + val.strMealThumb + '">' + val.idMeal + ": " + val.strMeal + "</div>";
+                $("#Meals").append(mealHTML);
+
+            });
+            }).fail(function(error){console.log(error.responseText);});
+        },
+        allowDuplicates:false
+    });
+
+    $(document).on("click", "#Meals .col-3.meal", function(e){
+        $.post("getJSON.php", {url:'http://www.themealdb.com/api/json/v1/1/lookup.php?i=' + $(this).data("id")}, function(response){
+            console.log(response.meals[0]);
+            console.log($(this).data("image"));
+            $("#MealCard .card-header").text(response.meals[0].strArea);
+            $("#MealCard .card-body .card-title").text(response.meals[0].strMeal);
+            $("#MealCard .card-body .card-text").text(response.meals[0].strInstructions);
+
+        });
+    });
+    $( "#ingredients" ).autocomplete({
+      source: ["Salt", "Chicken", "Lime"],
+      select: function( event, ui ) {
+        if (!$('#ingredientstags').tagExist(ui.item.value)) { $('#ingredientstags').addTag(ui.item.value); }
+
+        
+      }
+    });
+
+    $.post("getJSON.php", {url:"http://www.themealdb.com/api/json/v1/1/list.php?i=list"}, function(ingredients){
+        var ingredientList = ingredients.meals.map((val) => val.strIngredient);
+        $('#ingredients').autocomplete("option", { source: ingredientList });
+    });
+
+});
+</script>
+
+</body>
+</html>
